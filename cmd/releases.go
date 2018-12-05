@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"log"
 
+	"code.gitea.io/sdk/gitea"
+
 	"github.com/urfave/cli"
 )
 
@@ -17,6 +19,9 @@ var CmdReleases = cli.Command{
 	Usage:       "Log in a Gitea server",
 	Description: `Log in a Gitea server`,
 	Action:      runReleases,
+	Subcommands: []cli.Command{
+		CmdReleaseCreate,
+	},
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name:  "login, l",
@@ -47,6 +52,58 @@ func runReleases(ctx *cli.Context) error {
 			release.Title,
 			release.PublishedAt.Format("2006-01-02 15:04:05"),
 			release.TarURL)
+	}
+
+	return nil
+}
+
+var CmdReleaseCreate = cli.Command{
+	Name:        "create",
+	Usage:       "Create a release in repository",
+	Description: `Create a release in repository`,
+	Action:      runReleaseCreate,
+	Flags: []cli.Flag{
+		cli.StringFlag{
+			Name:  "tag",
+			Usage: "release tag name",
+		},
+		cli.StringFlag{
+			Name:  "target",
+			Usage: "release target refs, branch name or commit id",
+		},
+		cli.StringFlag{
+			Name:  "title, t",
+			Usage: "release title to create",
+		},
+		cli.StringFlag{
+			Name:  "note, n",
+			Usage: "release note to create",
+		},
+		cli.BoolFlag{
+			Name:  "draft, d",
+			Usage: "the release is a draft",
+		},
+		cli.BoolFlag{
+			Name:  "prerelease, p",
+			Usage: "the release is a prerelease",
+		},
+	},
+}
+
+func runReleaseCreate(ctx *cli.Context) error {
+	login, owner, repo := initCommand(ctx)
+
+	_, err := login.Client().CreateRelease(owner, repo, gitea.CreateReleaseOption{
+		TagName:      ctx.String("tag"),
+		Target:       ctx.String("target"),
+		Title:        ctx.String("title"),
+		Note:         ctx.String("note"),
+		IsDraft:      ctx.Bool("draft"),
+		IsPrerelease: ctx.Bool("prerelease"),
+	})
+
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	return nil

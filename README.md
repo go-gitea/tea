@@ -19,6 +19,7 @@ git clone git@try.gitea.io:gitea/gitea.git
 cd gitea
 tea login add --name=try --url=https://try.gitea.io --token=xxxxxx
 tea issues
+tea releases
 ```
 
 ## Contributing
