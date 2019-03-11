@@ -7,6 +7,8 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"code.gitea.io/sdk/gitea"
 
@@ -87,13 +89,17 @@ var CmdReleaseCreate = cli.Command{
 			Name:  "prerelease, p",
 			Usage: "the release is a prerelease",
 		},
+		cli.StringSliceFlag{
+			Name:  "asset, a",
+			Usage: "a list of files to attach to the release",
+		},
 	},
 }
 
 func runReleaseCreate(ctx *cli.Context) error {
 	login, owner, repo := initCommand(ctx)
 
-	_, err := login.Client().CreateRelease(owner, repo, gitea.CreateReleaseOption{
+	release, err := login.Client().CreateRelease(owner, repo, gitea.CreateReleaseOption{
 		TagName:      ctx.String("tag"),
 		Target:       ctx.String("target"),
 		Title:        ctx.String("title"),
@@ -103,7 +109,28 @@ func runReleaseCreate(ctx *cli.Context) error {
 	})
 
 	if err != nil {
+		if err.Error() == "409 Conflict" {
+			log.Fatal("error: There already is a release for this tag")
+		}
+
 		log.Fatal(err)
+	}
+
+	for _, asset := range ctx.StringSlice("asset") {
+		var file *os.File
+
+		if file, err = os.Open(asset); err != nil {
+			log.Fatal(err)
+		}
+
+		filePath := filepath.Base(asset)
+
+		if _, err = login.Client().CreateReleaseAttachment(owner, repo, release.ID, file, filePath); err != nil {
+			file.Close()
+			log.Fatal(err)
+		}
+
+		file.Close()
 	}
 
 	return nil

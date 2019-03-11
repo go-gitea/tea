@@ -186,7 +186,7 @@ func curGitRepoPath() (*Login, string, error) {
 	cmd := git.NewCommand("remote", "get-url", "origin")
 	u, err := cmd.RunInDir(filepath.Dir(os.Args[0]))
 	if err != nil || len(u) == 0 {
-		return nil, "", errors.New("You have to indicated a repo or execute the command in a repo")
+		return nil, "", errors.New("You have to indicate a repo or execute the command in a repo")
 	}
 
 	p, err := local_git.ParseURL(strings.TrimSpace(u))

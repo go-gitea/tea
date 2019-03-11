@@ -130,30 +130,36 @@ func initCommand(ctx *cli.Context) (*Login, string, string) {
 	}
 
 	var login *Login
-	if ctx.IsSet("login") {
-		login = getLoginByName(ctx.String("login"))
-		if login == nil {
-			log.Fatal("indicated login name", ctx.String("login"), "is not exist")
-		}
-	} else {
+	if loginFlag := getGlobalFlag(ctx, "login"); loginFlag == "" {
 		login, err = getActiveLogin()
 		if err != nil {
-			log.Fatal("get active login failed")
+			log.Fatal(err)
+		}
+	} else {
+		login = getLoginByName(loginFlag)
+		if login == nil {
+			log.Fatal("indicated login name", loginFlag, "does not exist")
 		}
 	}
 
-	var repoPath string
-	if !ctx.IsSet("repo") {
+	repoPath := getGlobalFlag(ctx, "repo")
+	if repoPath == "" {
 		login, repoPath, err = curGitRepoPath()
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-	} else {
-		repoPath = ctx.String("repo")
 	}
 
 	owner, repo := splitRepo(repoPath)
 	return login, owner, repo
+}
+
+func getGlobalFlag(ctx *cli.Context, flag string) string {
+	var val = ctx.String(flag)
+	if val == "" {
+		return ctx.GlobalString(flag)
+	}
+	return val
 }
 
 func runIssuesCreate(ctx *cli.Context) error {
