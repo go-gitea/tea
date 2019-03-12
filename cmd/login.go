@@ -31,8 +31,8 @@ var CmdLogin = cli.Command{
 // CmdLogin represents to login a gitea server.
 var cmdLoginAdd = cli.Command{
 	Name:        "add",
-	Usage:       "Log in a Gitea server",
-	Description: `Log in a Gitea server`,
+	Usage:       "Add a Login of a Gitea server",
+	Description: `Add a Login of a Gitea server`,
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name:  "name, n",
@@ -115,8 +115,8 @@ func runLoginAdd(ctx *cli.Context) error {
 // CmdLogin represents to login a gitea server.
 var cmdLoginList = cli.Command{
 	Name:        "ls",
-	Usage:       "Log in a Gitea server",
-	Description: `Log in a Gitea server`,
+	Usage:       "List all Logins of Gitea servers",
+	Description: `List all Logins of Gitea servers`,
 	Action:      runLoginList,
 }
 

@@ -18,8 +18,8 @@ import (
 // CmdReleases represents to login a gitea server.
 var CmdReleases = cli.Command{
 	Name:        "releases",
-	Usage:       "Log in a Gitea server",
-	Description: `Log in a Gitea server`,
+	Usage:       "Operate with releases of the repository",
+	Description: `Operate with releases of the repository`,
 	Action:      runReleases,
 	Subcommands: []cli.Command{
 		CmdReleaseCreate,
@@ -27,11 +27,11 @@ var CmdReleases = cli.Command{
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name:  "login, l",
-			Usage: "Indicate one login",
+			Usage: "Indicate one login, optional when inside a gitea repository",
 		},
 		cli.StringFlag{
 			Name:  "repo, r",
-			Usage: "Indicate one repository",
+			Usage: "Indicate one repository, optional when inside a gitea repository",
 		},
 	},
 }
