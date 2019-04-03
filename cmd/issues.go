@@ -19,8 +19,8 @@ import (
 // CmdIssues represents to login a gitea server.
 var CmdIssues = cli.Command{
 	Name:        "issues",
-	Usage:       "Log in a Gitea server",
-	Description: `Log in a Gitea server`,
+	Usage:       "Operate with issues of the repository",
+	Description: `Operate with issues of the repository`,
 	Action:      runIssues,
 	Subcommands: []cli.Command{
 		CmdIssuesList,
@@ -29,19 +29,19 @@ var CmdIssues = cli.Command{
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name:  "login, l",
-			Usage: "Indicate one login",
+			Usage: "Indicate one login, optional when inside a gitea repository",
 		},
 		cli.StringFlag{
 			Name:  "repo, r",
-			Usage: "Indicate one repository",
+			Usage: "Indicate one repository, optional when inside a gitea repository",
 		},
 	},
 }
 
 var CmdIssuesList = cli.Command{
 	Name:        "ls",
-	Usage:       "Log in a Gitea server",
-	Description: `Log in a Gitea server`,
+	Usage:       "List issues of the repository",
+	Description: `List issues of the repository`,
 	Action:      runIssuesList,
 }
 
