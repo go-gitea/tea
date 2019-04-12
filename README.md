@@ -4,23 +4,31 @@ This project acts as a command line tool for operating one or multiple Gitea ins
 the Gitea API implementation.
 
 ## Installation
-
+Currently no prebuilt binaries are provided.
+To install, a Go installation is needed.
+```sh
+go install code.gitea.io/tea
 ```
-go get github.com/go-gitea/tea
-go install github.com/go-gitea/tea
+
+If the `tea` executable is not found, you might need to set up your `$GOPATH` and `$PATH` variables first:
+```sh
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 ```
 
 ## Usage
-
-First of all, you have to create a token on your personal settings -> application.
-
-```
-git clone git@try.gitea.io:gitea/gitea.git
-cd gitea
+First of all, you have to create a token on your `personal settings -> application` page of your gitea instance.
+Use this token to login with `tea`:
+```sh
 tea login add --name=try --url=https://try.gitea.io --token=xxxxxx
+```
+
+Now you can use the `tea` commands:
+```sh
 tea issues
 tea releases
 ```
+
+> If you are inside a git repository hosted on a gitea instance, you don't need to specify the `--login` and `--repo` flags!
 
 ## Contributing
 
