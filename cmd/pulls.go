@@ -49,6 +49,9 @@ func runPulls(ctx *cli.Context) error {
 	}
 
 	for _, pr := range prs {
+		if pr == nil {
+			continue
+		}
 		name := pr.Poster.FullName
 		if len(name) == 0 {
 			name = pr.Poster.UserName
