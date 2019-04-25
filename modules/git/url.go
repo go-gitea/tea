@@ -10,9 +10,11 @@ var (
 	protocolRe = regexp.MustCompile("^[a-zA-Z_+-]+://")
 )
 
+// URLParser represents a git URL parser
 type URLParser struct {
 }
 
+// Parse parses the git URL
 func (p *URLParser) Parse(rawURL string) (u *url.URL, err error) {
 	if !protocolRe.MatchString(rawURL) &&
 		strings.Contains(rawURL, ":") &&
@@ -37,6 +39,7 @@ func (p *URLParser) Parse(rawURL string) (u *url.URL, err error) {
 	return
 }
 
+// ParseURL parses URL string and return URL struct
 func ParseURL(rawURL string) (u *url.URL, err error) {
 	p := &URLParser{}
 	return p.Parse(rawURL)

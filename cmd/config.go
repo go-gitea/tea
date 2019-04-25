@@ -17,14 +17,15 @@ import (
 	"path/filepath"
 	"strings"
 
-	"code.gitea.io/git"
 	"code.gitea.io/sdk/gitea"
 	local_git "code.gitea.io/tea/modules/git"
 	"code.gitea.io/tea/modules/utils"
+	git_config "gopkg.in/src-d/go-git.v4/config"
 
 	"github.com/go-gitea/yaml"
 )
 
+// Login represents a login to a gitea server, you even could add multiple logins for one gitea server
 type Login struct {
 	Name     string `yaml:"name"`
 	URL      string `yaml:"url"`
@@ -34,6 +35,7 @@ type Login struct {
 	Insecure bool   `yaml:"insecure"`
 }
 
+// Client returns a client to operate Gitea API
 func (l *Login) Client() *gitea.Client {
 	client := gitea.NewClient(l.URL, l.Token)
 	if l.Insecure {
@@ -49,6 +51,7 @@ func (l *Login) Client() *gitea.Client {
 	return client
 }
 
+// GetSSHHost returns SSH host name
 func (l *Login) GetSSHHost() string {
 	if l.SSHHost != "" {
 		return l.SSHHost
@@ -62,6 +65,7 @@ func (l *Login) GetSSHHost() string {
 	return u.Hostname()
 }
 
+// Config reprensents local configurations
 type Config struct {
 	Logins []Login `yaml:"logins"`
 }
@@ -183,27 +187,35 @@ func saveConfig(ymlPath string) error {
 }
 
 func curGitRepoPath() (*Login, string, error) {
-	cmd := git.NewCommand("remote", "get-url", "origin")
-	u, err := cmd.RunInDir(filepath.Dir(os.Args[0]))
-	if err != nil || len(u) == 0 {
-		return nil, "", errors.New("You have to indicate a repo or execute the command in a repo")
-	}
-
-	p, err := local_git.ParseURL(strings.TrimSpace(u))
+	gitConfig := git_config.NewConfig()
+	bs, err := ioutil.ReadFile(filepath.Join(filepath.Dir(os.Args[0]), ".git", "config"))
 	if err != nil {
-		return nil, "", fmt.Errorf("Git remote URL parse failed: %s", err.Error())
+		return nil, "", err
+	}
+	if err := gitConfig.Unmarshal(bs); err != nil {
+		return nil, "", err
+	}
+	remoteConfig, ok := gitConfig.Remotes["origin"]
+	if !ok || remoteConfig == nil {
+		return nil, "", errors.New("No remote origin found on this git repository")
 	}
 
 	for _, l := range config.Logins {
-		if p.Scheme == "http" || p.Scheme == "https" {
-			if strings.HasPrefix(u, l.URL) {
-				ps := strings.Split(p.Path, "/")
-				path := strings.Join(ps[len(ps)-2:], "/")
-				return &l, strings.TrimSuffix(path, ".git"), nil
+		for _, u := range remoteConfig.URLs {
+			p, err := local_git.ParseURL(strings.TrimSpace(u))
+			if err != nil {
+				return nil, "", fmt.Errorf("Git remote URL parse failed: %s", err.Error())
 			}
-		} else if p.Scheme == "ssh" {
-			if l.GetSSHHost() == p.Host {
-				return &l, strings.TrimLeft(strings.TrimSuffix(p.Path, ".git"), "/"), nil
+			if strings.EqualFold(p.Scheme, "http") || strings.EqualFold(p.Scheme, "https") {
+				if strings.HasPrefix(u, l.URL) {
+					ps := strings.Split(p.Path, "/")
+					path := strings.Join(ps[len(ps)-2:], "/")
+					return &l, strings.TrimSuffix(path, ".git"), nil
+				}
+			} else if strings.EqualFold(p.Scheme, "ssh") {
+				if l.GetSSHHost() == p.Host {
+					return &l, strings.TrimLeft(strings.TrimSuffix(p.Path, ".git"), "/"), nil
+				}
 			}
 		}
 	}

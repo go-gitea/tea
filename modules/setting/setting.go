@@ -4,6 +4,7 @@
 
 package setting
 
+// App related variables
 var (
 	AppVer       string
 	AppBuiltWith string

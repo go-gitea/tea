@@ -1,0 +1,186 @@
+workspace:
+  base: /go
+  path: src/code.gitea.io/tea
+
+clone:
+  git:
+    image: plugins/git:next
+    depth: 50
+    tags: true
+
+pipeline:
+  build:
+    image: golang:1.12
+    pull: true
+    commands:
+      - make clean
+      - make vet
+      - make lint
+      - make fmt-check
+      - make misspell-check
+      - make test-vendor
+      - make build
+    when:
+      event: [ push, tag, pull_request ]
+
+  unit-test:
+    image: golang:1.12
+    pull: true
+    group: test
+    commands:
+      - make unit-test-coverage
+    when:
+      event: [ push, pull_request ]
+      branch: [ master ]
+
+  release-test:
+    image: golang:1.12
+    pull: true
+    group: test
+    commands:
+      - make test
+    when:
+      event: [ push, pull_request ]
+      branch: [ release/* ]
+
+  tag-test:
+    image: golang:1.12
+    pull: true
+    group: test
+    commands:
+      - make test
+    when:
+      event: [ tag ]
+
+  generate-coverage:
+    image: golang:1.12
+    pull: true
+    environment:
+      TAGS: bindata
+    commands:
+      - make coverage
+    when:
+      event: [ push, pull_request ]
+      branch: [ master ]
+
+  coverage:
+    image: robertstettner/drone-codecov
+    secrets: [ codecov_token ]
+    files:
+      - coverage.all
+    when:
+      event: [ push, pull_request ]
+      branch: [ master ]
+
+  static:
+    image: techknowlogick/xgo:latest
+    pull: true
+    commands:
+      - export PATH=$PATH:$GOPATH/bin
+      - make release
+    when:
+      event: [ push, tag ]
+
+
+  docker-dryrun:
+    image: plugins/docker:17.12
+    pull: true
+    repo: gitea/tea
+    cache_from: gitea/tea
+    dry_run: true
+    when:
+      event: [ pull_request ]
+
+  release-docker:
+    image: plugins/docker:17.12
+    pull: true
+    secrets: [ docker_username, docker_password ]
+    repo: gitea/tea
+    tags: [ '${DRONE_BRANCH##release/v}' ]
+    cache_from: gitea/tea
+    when:
+      event: [ push ]
+      branch: [ release/* ]
+
+  docker:
+    image: plugins/docker:17.12
+    secrets: [ docker_username, docker_password ]
+    pull: true
+    repo: gitea/tea
+    cache_from: gitea/tea
+    default_tags: true
+    when:
+      event: [ push, tag ]
+
+  gpg-sign:
+    image: plugins/gpgsign:1
+    pull: true
+    secrets: [ gpgsign_key, gpgsign_passphrase ]
+    detach_sign: true
+    files:
+      - dist/release/*
+    excludes:
+      - dist/release/*.sha256
+    when:
+      event: [ push, tag ]
+
+  tag-release:
+    image: plugins/s3:1
+    pull: true
+    secrets: [ aws_access_key_id, aws_secret_access_key ]
+    bucket: releases
+    acl: public-read
+    endpoint: https://storage.gitea.io
+    path_style: true
+    strip_prefix: dist/release/
+    source: dist/release/*
+    target: /tea/${DRONE_TAG##v}
+    when:
+      event: [ tag ]
+
+  release-branch-release:
+    image: plugins/s3:1
+    pull: true
+    secrets: [ aws_access_key_id, aws_secret_access_key ]
+    bucket: releases
+    acl: public-read
+    endpoint: https://storage.gitea.io
+    path_style: true
+    strip_prefix: dist/release/
+    source: dist/release/*
+    target: /tea/${DRONE_BRANCH##release/v}
+    when:
+      event: [ push ]
+      branch: [ release/* ]
+
+  release:
+    image: plugins/s3:1
+    pull: true
+    secrets: [ aws_access_key_id, aws_secret_access_key ]
+    bucket: releases
+    acl: public-read
+    endpoint: https://storage.gitea.io
+    path_style: true
+    strip_prefix: dist/release/
+    source: dist/release/*
+    target: /tea/master
+    when:
+      event: [ push ]
+      branch: [ master ]
+
+  github:
+    image: plugins/github-release:1
+    pull: true
+    secrets: [ github_token ]
+    files:
+      - dist/release/*
+    when:
+      event: [ tag ]
+
+  discord:
+    image: appleboy/drone-discord:1.0.0
+    pull: true
+    secrets: [ discord_webhook_id, discord_webhook_token ]
+    when:
+      event: [ push, tag, pull_request ]
+      status: [ changed, failure ]

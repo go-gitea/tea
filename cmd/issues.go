@@ -38,6 +38,7 @@ var CmdIssues = cli.Command{
 	},
 }
 
+// CmdIssuesList represents a sub command of issues to list issues
 var CmdIssuesList = cli.Command{
 	Name:        "ls",
 	Usage:       "List issues of the repository",
@@ -106,6 +107,7 @@ func runIssuesList(ctx *cli.Context) error {
 	return nil
 }
 
+// CmdIssuesCreate represents a sub command of issues to create issue
 var CmdIssuesCreate = cli.Command{
 	Name:        "create",
 	Usage:       "Create an issue on repository",

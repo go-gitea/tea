@@ -59,6 +59,7 @@ func runReleases(ctx *cli.Context) error {
 	return nil
 }
 
+// CmdReleaseCreate represents a sub command of Release to create release.
 var CmdReleaseCreate = cli.Command{
 	Name:        "create",
 	Usage:       "Create a release in repository",
