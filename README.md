@@ -7,6 +7,7 @@ the Gitea API implementation.
 Currently no prebuilt binaries are provided.
 To install, a Go installation is needed.
 ```sh
+go get code.gitea.io/tea
 go install code.gitea.io/tea
 ```
 
@@ -29,6 +30,15 @@ tea releases
 ```
 
 > If you are inside a git repository hosted on a gitea instance, you don't need to specify the `--login` and `--repo` flags!
+
+## Compilation
+
+To compile the sources yourself run the following:
+```sh
+go get code.gitea.io/tea
+cd "${GOPATH}/src/code.gitea.io/tea"
+go build
+```
 
 ## Contributing
 
