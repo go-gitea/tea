@@ -81,37 +81,6 @@ pipeline:
     when:
       event: [ push, tag ]
 
-
-  docker-dryrun:
-    image: plugins/docker:17.12
-    pull: true
-    repo: gitea/tea
-    cache_from: gitea/tea
-    dry_run: true
-    when:
-      event: [ pull_request ]
-
-  release-docker:
-    image: plugins/docker:17.12
-    pull: true
-    secrets: [ docker_username, docker_password ]
-    repo: gitea/tea
-    tags: [ '${DRONE_BRANCH##release/v}' ]
-    cache_from: gitea/tea
-    when:
-      event: [ push ]
-      branch: [ release/* ]
-
-  docker:
-    image: plugins/docker:17.12
-    secrets: [ docker_username, docker_password ]
-    pull: true
-    repo: gitea/tea
-    cache_from: gitea/tea
-    default_tags: true
-    when:
-      event: [ push, tag ]
-
   gpg-sign:
     image: plugins/gpgsign:1
     pull: true
