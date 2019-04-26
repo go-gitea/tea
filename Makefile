@@ -70,13 +70,6 @@ fmt:
 vet:
 	$(GO) vet $(PACKAGES)
 
-.PHONY: errcheck
-errcheck:
-	@hash errcheck > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		$(GO) get -u github.com/kisielk/errcheck; \
-	fi
-	errcheck $(PACKAGES)
-
 .PHONY: lint
 lint:
 	@hash revive > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
@@ -111,13 +104,6 @@ fmt-check:
 .PHONY: test
 test:
 	GO111MODULE=on $(GO) test -mod=vendor -tags='sqlite sqlite_unlock_notify' $(PACKAGES)
-
-.PHONY: coverage
-coverage:
-	@hash gocovmerge > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		$(GO) get -u github.com/wadey/gocovmerge; \
-	fi
-	gocovmerge $(shell find . -type f -name "coverage.out") > coverage.all;\
 
 .PHONY: unit-test-coverage
 unit-test-coverage:

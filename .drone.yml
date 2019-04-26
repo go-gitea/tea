@@ -52,22 +52,11 @@ pipeline:
     when:
       event: [ tag ]
 
-  generate-coverage:
-    image: golang:1.12
-    pull: true
-    environment:
-      TAGS: bindata
-    commands:
-      - make coverage
-    when:
-      event: [ push, pull_request ]
-      branch: [ master ]
-
   coverage:
     image: robertstettner/drone-codecov
     secrets: [ codecov_token ]
     files:
-      - coverage.all
+      - coverage.out
     when:
       event: [ push, pull_request ]
       branch: [ master ]
