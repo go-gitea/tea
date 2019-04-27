@@ -176,6 +176,13 @@ endif
 release-copy:
 	cd $(DIST); for file in `find /build -type f -name "*"`; do cp $${file} ./release/; done;
 
+.PHONY: release-compress
+release-compress:
+	@hash gxz > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
+		$(GO) get -u github.com/ulikunitz/xz/cmd/gxz; \
+	fi
+	cd $(DIST)/release/; for file in `find . -type f -name "*"`; do echo "compressing $${file}" && gxz -k -9 $${file}; done;
+
 .PHONY: release-check
 release-check:
 	cd $(DIST)/release/; for file in `find . -type f -name "*"`; do echo "checksumming $${file}" && $(SHASUM) `echo $${file} | sed 's/^..//'` > $${file}.sha256; done;
